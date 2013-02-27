@@ -9,32 +9,27 @@ namespace Nancy.ViewEngines.Markdown
 
     public class MarkDownEngine : IViewEngine
     {
-        private readonly IRootPathProvider rootPathProvider;
-
         public IEnumerable<string> Extensions
         {
             get { return new[] { "md" }; }
         }
 
-        public MarkDownEngine(IRootPathProvider rootPathProvider)
-        {
-            this.rootPathProvider = rootPathProvider;
-        }
+        public MarkDownEngine()
+        { }
 
         public void Initialize(ViewEngineStartupContext viewEngineStartupContext)
-        {
-        }
+        { }
 
         public Response RenderView(ViewLocationResult viewLocationResult, dynamic model, IRenderContext renderContext)
         {
             var response = new HtmlResponse();
 
             string HTML = renderContext.ViewCache.GetOrAdd(viewLocationResult, result =>
-                                                                     {
-                                                                         string markDown = File.ReadAllText(rootPathProvider.GetRootPath() + viewLocationResult.Location + Path.DirectorySeparatorChar + viewLocationResult.Name + ".md");
-                                                                         var parser = new MarkdownSharp.Markdown();
-                                                                         return parser.Transform(markDown);
-                                                                     });
+	         {
+	             string markDown = viewLocationResult.Contents().ReadToEnd ();
+	             var parser = new MarkdownSharp.Markdown();
+	             return parser.Transform(markDown);
+	         });
             response.Contents = stream =>
             {
                 var writer = new StreamWriter(stream);
